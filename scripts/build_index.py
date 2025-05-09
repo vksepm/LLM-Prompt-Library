@@ -6,9 +6,21 @@ Run from repo root:  python scripts/build_index.py
 
 import pathlib, re, textwrap
 from urllib.parse import quote
+import subprocess
 
 PROMPTS_DIR = pathlib.Path("prompts")
 INDEX_FILE  = PROMPTS_DIR / "INDEX.md"
+
+
+
+def git_commit_changes():
+    try:
+        subprocess.run(['git', 'add', str(INDEX_FILE)], check=True)
+        subprocess.run(['git', 'commit', '-m', 'Update INDEX.md'], check=True)
+        subprocess.run(['git', 'push'], check=True)
+        print("Changes to INDEX.md committed and pushed.")
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to commit changes: {e}")
 
 def extract_title(path: pathlib.Path) -> str:
     """Grab first non‑empty heading line or fallback to filename."""
@@ -36,6 +48,9 @@ def main() -> None:
     """)
     INDEX_FILE.write_text(header + "\n".join(rows) + "\n", encoding="utf‑8")
     print(f"Generated {INDEX_FILE} with {len(rows)} entries")
+    
+    # Uncomment the following line to enable auto-commit
+    git_commit_changes()
 
 if __name__ == "__main__":
     main()
